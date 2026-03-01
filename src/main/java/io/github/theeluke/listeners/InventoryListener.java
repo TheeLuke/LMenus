@@ -5,6 +5,7 @@ import io.github.theeluke.managers.MenuManager;
 import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
+import io.github.theeluke.utils.MessageUtil;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -110,7 +111,7 @@ public class InventoryListener implements Listener {
                 menu.setItems(newItems);
                 storageManager.saveMenu(menu);
 
-                player.sendMessage(ChatColor.GREEN + "[LMenus] Menu '" + menuName + "' has been saved successfully!");
+                MessageUtil.send(player, "menu_saved", "{name}", menuName);
             }
         }
 

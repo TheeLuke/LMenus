@@ -7,6 +7,7 @@ import io.github.theeluke.managers.MenuManager;
 import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
+import io.github.theeluke.utils.MessageUtil;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -35,12 +36,12 @@ public class LMenusCommand extends BaseCommand {
     @Syntax("<name> <size> [title]")
     public void onCreate(Player player, String name, int size, @Optional String title) {
         if (menuManager.menuExists(name)) {
-            player.sendMessage(ChatColor.RED + "A menu with that name already exists!");
+            MessageUtil.send(player, "menu_already_exists");
             return;
         }
 
         if (size % 9 != 0 || size < 9 || size > 54) {
-            player.sendMessage(ChatColor.RED + "Size must be a multiple of 9, between 9 and 54.");
+            MessageUtil.send(player, "invalid_size");
             return;
         }
 
@@ -54,7 +55,7 @@ public class LMenusCommand extends BaseCommand {
 
         // Start the creation session
         sessionManager.startSession(player, SessionManager.SessionType.CREATING, menu.getName());
-        player.sendMessage(ChatColor.GREEN + "Creating menu '" + name + "'. Place items and close the inventory to save!");
+        MessageUtil.send(player, "menu_created", "{name}", name);
     }
 
     @Subcommand("edit")
@@ -64,14 +65,14 @@ public class LMenusCommand extends BaseCommand {
     public void onEdit(Player player, String name) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
-            player.sendMessage(ChatColor.RED + "Menu not found.");
+            MessageUtil.send(player, "menu_not_found");
             return;
         }
 
         // Open the pre-populated inventory
         player.openInventory(menu.buildInventory());
         sessionManager.startSession(player, SessionManager.SessionType.EDITING, menu.getName());
-        player.sendMessage(ChatColor.YELLOW + "Editing menu '" + menu.getName() + "'. Close the inventory to save changes.");
+        MessageUtil.send(player, "menu_editing", "{name}", name);
     }
 
     @Subcommand("remove")
@@ -80,13 +81,13 @@ public class LMenusCommand extends BaseCommand {
     @CommandCompletion("@menus")
     public void onRemove(Player player, String name) {
         if (!menuManager.menuExists(name)) {
-            player.sendMessage(ChatColor.RED + "Menu not found.");
+            MessageUtil.send(player, "menu_not_found");
             return;
         }
 
         menuManager.removeMenu(name);
         storageManager.deleteMenuFile(name);
-        player.sendMessage(ChatColor.GREEN + "Menu '" + name + "' has been permanently deleted.");
+        MessageUtil.send(player, "menu_deleted", "{name}", name);
     }
 
     @Subcommand("retitle")
@@ -96,13 +97,13 @@ public class LMenusCommand extends BaseCommand {
     public void onRetitle(Player player, String name, String newTitle) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
-            player.sendMessage(ChatColor.RED + "Menu not found.");
+            MessageUtil.send(player, "menu_not_found");
             return;
         }
 
         menu.setTitle(newTitle);
         storageManager.saveMenu(menu);
-        player.sendMessage(ChatColor.GREEN + "Menu '" + name + "' retitled to: " + ChatColor.translateAlternateColorCodes('&', newTitle));
+        MessageUtil.send(player, "menu_retitled", "{name}", name);
     }
 
     @Subcommand("reload")
@@ -110,22 +111,24 @@ public class LMenusCommand extends BaseCommand {
     @Description("Reloads all menus from the YAML files.")
     public void onReload(org.bukkit.command.CommandSender sender) {
         // Closes any active menu sessions
-        for (Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
-            if (sessionManager.hasSession(p)) {
-                p.closeInventory();
-                p.sendMessage(ChatColor.RED + "An admin reloaded LMenus. Your session was safely closed.");
+        for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
+            if (sessionManager.hasSession(player)) {
+                player.closeInventory();
+                MessageUtil.send(player, "session_closed");
             }
         }
 
         menuManager.clear();
         storageManager.loadAll(menuManager);
 
-        sender.sendMessage(ChatColor.GREEN + "[LMenus] Successfully reloaded " + menuManager.getLoadedMenus().size() + " menus from disk!");
+        LMenus.getInstance().reloadConfig();
+
+        MessageUtil.send(sender, "reload_success", "{count}", String.valueOf(menuManager.getLoadedMenus().size()));
     }
 
     // PLAYER COMMANDS
 
-    @Subcommand("open") // Explicitly handles /lm open <name>
+    @Subcommand("open")
     @CommandPermission("lmenus.use.open")
     @CommandCompletion("@menus")
     @Syntax("<name>")
@@ -140,30 +143,31 @@ public class LMenusCommand extends BaseCommand {
     public void onInfo(Player player, String name) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
-            player.sendMessage(ChatColor.RED + "Menu not found.");
+            MessageUtil.send(player, "menu_not_found");
             return;
         }
 
-        // Translate the UUID to a username
         String creatorName = org.bukkit.Bukkit.getOfflinePlayer(menu.getCreator()).getName();
         if (creatorName == null) {
-            // Fallback
             creatorName = "Unknown (" + menu.getCreator().toString() + ")";
         }
 
-        player.sendMessage(ChatColor.GRAY + "=== Menu Info: " + ChatColor.AQUA + menu.getName() + ChatColor.GRAY + " ===");
-        player.sendMessage(ChatColor.GRAY + "Title: " + ChatColor.RESET + ChatColor.translateAlternateColorCodes('&', menu.getTitle()));
-        player.sendMessage(ChatColor.GRAY + "Size: " + ChatColor.WHITE + menu.getSize() + " slots");
-        player.sendMessage(ChatColor.GRAY + "Items configured: " + ChatColor.WHITE + menu.getItems().size());
-        player.sendMessage(ChatColor.GRAY + "Created by: " + ChatColor.WHITE + creatorName);
-        player.sendMessage(ChatColor.GRAY + "Created on: " + ChatColor.WHITE + dateFormat.format(new Date(menu.getCreationDate())));
+        java.util.Map<String, String> placeholders = new java.util.HashMap<>();
+        placeholders.put("name", menu.getName());
+        placeholders.put("title", menu.getTitle());
+        placeholders.put("size", String.valueOf(menu.getSize()));
+        placeholders.put("items", String.valueOf(menu.getItems().size()));
+        placeholders.put("creator", creatorName);
+        placeholders.put("date", dateFormat.format(new Date(menu.getCreationDate())));
+
+        MessageUtil.sendList(player, "menu_info", placeholders);
     }
 
     @Subcommand("list")
     @CommandPermission("lmenus.use.list")
     public void onList(Player player) {
         if (menuManager.getLoadedMenus().isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "There are currently no menus created.");
+            MessageUtil.send(player, "no_menus");
             return;
         }
 
@@ -172,8 +176,7 @@ public class LMenusCommand extends BaseCommand {
                 .map(Menu::getName)
                 .collect(java.util.stream.Collectors.joining(ChatColor.GRAY + ", " + ChatColor.AQUA));
 
-        player.sendMessage(ChatColor.GRAY + "=== " + ChatColor.AQUA + "Loaded Menus " + ChatColor.GRAY + "===");
-        player.sendMessage(ChatColor.AQUA + menuNames);
+        MessageUtil.send(player, "menu_list", "{menus}", menuNames);
     }
 
     @HelpCommand
@@ -186,7 +189,7 @@ public class LMenusCommand extends BaseCommand {
     private void openMenu(Player player, String name) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
-            player.sendMessage(ChatColor.RED + "Menu not found.");
+            MessageUtil.send(player, "menu_not_found");
             return;
         }
 

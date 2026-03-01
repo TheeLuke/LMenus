@@ -24,6 +24,9 @@ public final class LMenus extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
+        // config
+        saveDefaultConfig();
+
         // load managers
         this.menuManager = new MenuManager();
         this.sessionManager = new SessionManager();
