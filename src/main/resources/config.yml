@@ -13,10 +13,11 @@ messages:
   menu_editing: "&eEditing menu '{name}'. Close the inventory to save changes."
   menu_saved: "&aMenu '{name}' has been saved successfully!"
   menu_deleted: "&aMenu '{name}' has been permanently deleted."
-  menu_retitled: "&aMenu '{name}' retitled to: {title}"
+  menu_retitled: "&aMenu '{name}' has been retitled."
   no_menus: "&eThere are currently no menus created."
   reload_success: "&aSuccessfully reloaded {count} menus and config from disk!"
   session_closed: "&cAn admin reloaded LMenus. Your session was safely closed."
+  menu_list: "&8=== &bLoaded Menus &8===\n&b{menus}"
   menu_info:
     - "&7=== &bMenu Info: &a{name} &7==="
     - "&bTitle: &r{title}"
