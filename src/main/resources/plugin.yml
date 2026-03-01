@@ -1,0 +1,8 @@
+name: LMenus
+version: '0.1.0'
+main: io.github.theeluke.LMenus
+api-version: '1.21'
+prefix: LMenus
+authors: [ theeluke ]
+description: Create and display GUI menus in any way you like
+website: theeluke.github.io
