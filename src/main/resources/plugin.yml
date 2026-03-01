@@ -4,5 +4,54 @@ main: io.github.theeluke.LMenus
 api-version: '1.21'
 prefix: LMenus
 authors: [ theeluke ]
-description: Create and display GUI menus in any way you like
+description: A custom GUI creator and manager plugin.
 website: theeluke.github.io
+
+permissions:
+  # master
+  lmenus.*:
+    description: Grants all LMenus permissions.
+    children:
+      lmenus.admin.*: true
+      lmenus.use.*: true
+
+  # Admin
+  lmenus.admin.*:
+    description: Grants all admin commands.
+    default: op
+    children:
+      lmenus.admin.create: true
+      lmenus.admin.edit: true
+      lmenus.admin.remove: true
+      lmenus.admin.retitle: true
+      lmenus.admin.reload: true
+
+  # Player
+  lmenus.use.*:
+    description: Grants all basic usage commands.
+    default: true
+    children:
+      lmenus.use.open: true
+      lmenus.use.info: true
+      lmenus.use.list: true
+      lmenus.use.help: true
+
+  # Individual Permissions
+  lmenus.admin.create:
+    description: Allows creation of new menus.
+  lmenus.admin.edit:
+    description: Allows editing of existing menus.
+  lmenus.admin.remove:
+    description: Allows deletion of menus.
+  lmenus.admin.retitle:
+    description: Allows retitling of menus.
+  lmenus.admin.reload:
+    description: Allows reloading the plugin data.
+  lmenus.use.open:
+    description: Allows opening menus.
+  lmenus.use.info:
+    description: Allows viewing menu info.
+  lmenus.use.list:
+    description: Allows listing available menus.
+  lmenus.use.help:
+    description: Allows viewing the help menu.

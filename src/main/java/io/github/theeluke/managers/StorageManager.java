@@ -1,0 +1,102 @@
+package io.github.theeluke.managers;
+
+import io.github.theeluke.LMenus;
+import io.github.theeluke.models.Menu;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
+
+public class StorageManager {
+
+    private final LMenus plugin;
+    private final File menuFolder;
+
+    public StorageManager(LMenus plugin) {
+        this.plugin = plugin;
+        // Creates a subfolder called "menus"
+        this.menuFolder = new File(plugin.getDataFolder(), "menus");
+        if (!menuFolder.exists()) {
+            menuFolder.mkdirs();
+        }
+    }
+
+    public void saveMenu(Menu menu) {
+        File file = new File(menuFolder, menu.getName().toLowerCase() + ".yml");
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+        // Save metadata
+        config.set("name", menu.getName());
+        config.set("size", menu.getSize());
+        config.set("title", menu.getTitle());
+        config.set("creator", menu.getCreator().toString());
+        config.set("creationDate", menu.getCreationDate());
+
+        // Clear existing items in config to prevent "ghost" items if the menu was edited and an item was removed
+        config.set("items", null);
+
+        // Save items by their slot number
+        for (Map.Entry<Integer, ItemStack> entry : menu.getItems().entrySet()) {
+            config.set("items." + entry.getKey(), entry.getValue());
+        }
+
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            plugin.getLogger().severe("Could not save menu: " + menu.getName());
+            e.printStackTrace();
+        }
+    }
+
+    public void loadAll(MenuManager menuManager) {
+        if (!menuFolder.exists()) return;
+
+        File[] files = menuFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files == null) return;
+
+        for (File file : files) {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+            try {
+                String name = config.getString("name");
+                int size = config.getInt("size");
+                String title = config.getString("title");
+                UUID creator = UUID.fromString(config.getString("creator"));
+                long creationDate = config.getLong("creationDate");
+
+                Menu menu = new Menu(name, size, title, creator, creationDate);
+
+                // Load items if the configuration section exists
+                if (config.contains("items")) {
+                    for (String key : config.getConfigurationSection("items").getKeys(false)) {
+                        int slot = Integer.parseInt(key);
+                        ItemStack item = config.getItemStack("items." + slot);
+                        if (item != null) {
+                            menu.setItem(slot, item);
+                        }
+                    }
+                }
+
+                menuManager.addMenu(menu);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to load menu file: " + file.getName() + " - " + e.getMessage());
+            }
+        }
+    }
+
+    public void saveAll(MenuManager menuManager) {
+        for (Menu menu : menuManager.getLoadedMenus()) {
+            saveMenu(menu);
+        }
+        plugin.getLogger().info("Saved " + menuManager.getLoadedMenus().size() + " menus to disk.");
+    }
+
+    public void deleteMenuFile(String name) {
+        File file = new File(menuFolder, name.toLowerCase() + ".yml");
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+}
