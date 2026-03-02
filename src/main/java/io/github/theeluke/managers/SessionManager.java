@@ -11,17 +11,7 @@ public class SessionManager {
     // Defines what the player is doing with the GUI
     public enum SessionType { CREATING, EDITING, VIEWING }
 
-    public static class Session {
-        private final SessionType type;
-        private final String menuName;
-
-        public Session(SessionType type, String menuName) {
-            this.type = type;
-            this.menuName = menuName;
-        }
-
-        public SessionType getType() { return type; }
-        public String getMenuName() { return menuName; }
+    public record Session(SessionType type, String menuName) {
     }
 
     private final Map<UUID, Session> activeSessions = new HashMap<>();

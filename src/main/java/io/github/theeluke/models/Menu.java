@@ -11,11 +11,11 @@ import java.util.UUID;
 
 public class Menu {
 
-    private String name;
-    private int size;
+    private final String name;
+    private final int size;
     private String title;
-    private UUID creator;
-    private long creationDate;
+    private final UUID creator;
+    private final long creationDate;
     private Map<Integer, ItemStack> items;
 
     public Menu(String name, int size, String title, UUID creator, long creationDate) {

@@ -6,7 +6,6 @@ import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import io.github.theeluke.utils.MessageUtil;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,32 +34,33 @@ public class InventoryListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-
-        // no active session? dont care about your clicks!
         if (!sessionManager.hasSession(player)) return;
 
         SessionManager.Session session = sessionManager.getSession(player);
 
-        // View logic
-        if (session.getType() == SessionManager.SessionType.VIEWING) {
+        if (session.type() == SessionManager.SessionType.VIEWING) {
 
-            // Prevent if they clicked directly inside the top GUI menu
-            if (event.getClickedInventory() != null && event.getClickedInventory().equals(event.getView().getTopInventory())) {
+            Inventory clickedInv = event.getClickedInventory();
+
+            // ANTI-DUPE LOGIC
+            if (clickedInv == null) return;
+            if (clickedInv.equals(event.getView().getTopInventory())) {
+                event.setCancelled(true);
+                return;
+            }
+            // Prevents shift-clicking
+            if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                 event.setCancelled(true);
             }
-            // Prevent shift-clicking items from their bottom inventory up into the GUI
-            else {
-                if (event.isShiftClick()) {
-                    event.getView().getTopInventory();
-                    event.setCancelled(true);
-                }
+            // Prevents double-clicking
+            else if (event.getAction() == InventoryAction.COLLECT_TO_CURSOR) {
+                event.setCancelled(true);
             }
-            // Prevent double-clicking to gather items into the cursor
-            if (event.getAction() == InventoryAction.COLLECT_TO_CURSOR) {
+            // Block offhand swapping
+            else if (event.getClick() == org.bukkit.event.inventory.ClickType.SWAP_OFFHAND) {
                 event.setCancelled(true);
             }
         }
-        // If CREATING or EDITING, do nothing and let them manipulate
     }
 
     @EventHandler
@@ -71,7 +71,7 @@ public class InventoryListener implements Listener {
 
         SessionManager.Session session = sessionManager.getSession(player);
 
-        if (session.getType() == SessionManager.SessionType.VIEWING) {
+        if (session.type() == SessionManager.SessionType.VIEWING) {
             // Check if any of the dragged slots fall within the top inventory.
             int topSize = event.getView().getTopInventory().getSize();
             for (int slot : event.getRawSlots()) {
@@ -90,10 +90,10 @@ public class InventoryListener implements Listener {
         if (!sessionManager.hasSession(player)) return;
 
         SessionManager.Session session = sessionManager.getSession(player);
-        String menuName = session.getMenuName();
+        String menuName = session.menuName();
 
         // EDITING LOGIC
-        if (session.getType() == SessionManager.SessionType.CREATING || session.getType() == SessionManager.SessionType.EDITING) {
+        if (session.type() == SessionManager.SessionType.CREATING || session.type() == SessionManager.SessionType.EDITING) {
             Menu menu = menuManager.getMenu(menuName);
 
             if (menu != null) {

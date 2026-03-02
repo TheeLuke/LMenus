@@ -15,6 +15,7 @@ import org.bukkit.inventory.Inventory;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@SuppressWarnings("unused")
 @CommandAlias("lm|lmenus")
 public class LMenusCommand extends BaseCommand {
 
@@ -108,7 +109,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("reload")
     @CommandPermission("lmenus.admin.reload")
-    @Description("Reloads all menus from the YAML files.")
+    @Description("Reloads all menus and configs.")
     public void onReload(org.bukkit.command.CommandSender sender) {
         // Closes any active menu sessions
         for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {

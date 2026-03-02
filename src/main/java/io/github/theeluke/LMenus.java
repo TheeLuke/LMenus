@@ -15,7 +15,6 @@ public final class LMenus extends JavaPlugin {
 
     private static LMenus instance;
 
-    private PaperCommandManager commandManager;
     private MenuManager menuManager;
     private SessionManager sessionManager;
     private StorageManager storageManager;
@@ -31,7 +30,7 @@ public final class LMenus extends JavaPlugin {
         this.menuManager = new MenuManager();
         this.sessionManager = new SessionManager();
         this.storageManager = new StorageManager(this);
-        this.commandManager = new PaperCommandManager(this);
+        PaperCommandManager commandManager = new PaperCommandManager(this);
 
         // load menus
         this.storageManager.loadAll(menuManager);
@@ -40,21 +39,19 @@ public final class LMenus extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 
         // register command & tab completion
-        this.commandManager.getCommandCompletions().registerAsyncCompletion("menus", c -> {
-            return this.menuManager.getLoadedMenus().stream()
-                    .map(Menu::getName)
-                    .collect(java.util.stream.Collectors.toList());
-        });
-        this.commandManager.registerCommand(new LMenusCommand(this));
-        this.commandManager.enableUnstableAPI("help");
+        commandManager.getCommandCompletions().registerAsyncCompletion("menus", c -> this.menuManager.getLoadedMenus().stream()
+                .map(Menu::getName)
+                .collect(java.util.stream.Collectors.toList()));
+        commandManager.registerCommand(new LMenusCommand(this));
+        commandManager.enableUnstableAPI("help");
         // Set the colors for the Help Menu
-        this.commandManager.getFormat(MessageType.HELP).setColor(1, ChatColor.WHITE);
-        this.commandManager.getFormat(MessageType.HELP).setColor(2, ChatColor.GRAY);
-        this.commandManager.getFormat(MessageType.HELP).setColor(3, ChatColor.AQUA);
+        commandManager.getFormat(MessageType.HELP).setColor(1, ChatColor.WHITE);
+        commandManager.getFormat(MessageType.HELP).setColor(2, ChatColor.GRAY);
+        commandManager.getFormat(MessageType.HELP).setColor(3, ChatColor.AQUA);
         // Set the colors for Syntax Errors
-        this.commandManager.getFormat(MessageType.SYNTAX).setColor(1, ChatColor.AQUA);
-        this.commandManager.getFormat(MessageType.SYNTAX).setColor(2, ChatColor.WHITE);
-        this.commandManager.usePerIssuerLocale(true, false);
+        commandManager.getFormat(MessageType.SYNTAX).setColor(1, ChatColor.AQUA);
+        commandManager.getFormat(MessageType.SYNTAX).setColor(2, ChatColor.WHITE);
+        commandManager.usePerIssuerLocale(true, false);
 
         getLogger().info("LMenus is enabled.");
     }

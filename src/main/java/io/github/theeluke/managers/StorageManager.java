@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class StorageManager {
@@ -63,14 +64,14 @@ public class StorageManager {
                 String name = config.getString("name");
                 int size = config.getInt("size");
                 String title = config.getString("title");
-                UUID creator = UUID.fromString(config.getString("creator"));
+                UUID creator = UUID.fromString(Objects.requireNonNull(config.getString("creator")));
                 long creationDate = config.getLong("creationDate");
 
                 Menu menu = new Menu(name, size, title, creator, creationDate);
 
                 // Load items if the configuration section exists
                 if (config.contains("items")) {
-                    for (String key : config.getConfigurationSection("items").getKeys(false)) {
+                    for (String key : Objects.requireNonNull(config.getConfigurationSection("items")).getKeys(false)) {
                         int slot = Integer.parseInt(key);
                         ItemStack item = config.getItemStack("items." + slot);
                         if (item != null) {
