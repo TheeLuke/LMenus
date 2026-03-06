@@ -6,7 +6,7 @@
 
     <groupId>io.github.theeluke</groupId>
     <artifactId>LMenus</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
     <packaging>jar</packaging>
 
     <name>LMenus</name>
@@ -44,6 +44,10 @@
                             <pattern>co.aikar.locales</pattern>
                             <shadedPattern>io.github.theeluke.locales</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>org.bstats</pattern>
+                            <shadedPattern>io.github.theeluke.bstats</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -67,6 +71,15 @@
             <id>aikar</id>
             <url>https://repo.aikar.co/content/groups/aikar/</url>
         </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+            <layout>default</layout>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -80,6 +93,18 @@
             <groupId>co.aikar</groupId>
             <artifactId>acf-paper</artifactId>
             <version>0.5.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.0.2</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

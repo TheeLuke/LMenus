@@ -35,6 +35,7 @@ public class LMenusCommand extends BaseCommand {
     @Subcommand("create")
     @CommandPermission("lmenus.admin.create")
     @Syntax("<name> <size> [title]")
+    @Description("Creates a menu.")
     public void onCreate(Player player, String name, int size, @Optional String title) {
         if (menuManager.menuExists(name)) {
             MessageUtil.send(player, "menu_already_exists");
@@ -51,7 +52,7 @@ public class LMenusCommand extends BaseCommand {
         menuManager.addMenu(menu);
 
         // Open the empty inventory for them to fill
-        Inventory inv = menu.buildInventory();
+        Inventory inv = menu.buildInventory(player);
         player.openInventory(inv);
 
         // Start the creation session
@@ -63,6 +64,7 @@ public class LMenusCommand extends BaseCommand {
     @CommandPermission("lmenus.admin.edit")
     @Syntax("<name>")
     @CommandCompletion("@menus")
+    @Description("Opens GUI to edit the specified menu.")
     public void onEdit(Player player, String name) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
@@ -71,7 +73,7 @@ public class LMenusCommand extends BaseCommand {
         }
 
         // Open the pre-populated inventory
-        player.openInventory(menu.buildInventory());
+        player.openInventory(menu.buildInventory(player));
         sessionManager.startSession(player, SessionManager.SessionType.EDITING, menu.getName());
         MessageUtil.send(player, "menu_editing", "{name}", name);
     }
@@ -80,6 +82,7 @@ public class LMenusCommand extends BaseCommand {
     @CommandPermission("lmenus.admin.remove")
     @Syntax("<name>")
     @CommandCompletion("@menus")
+    @Description("Removes specified menu")
     public void onRemove(Player player, String name) {
         if (!menuManager.menuExists(name)) {
             MessageUtil.send(player, "menu_not_found");
@@ -95,6 +98,7 @@ public class LMenusCommand extends BaseCommand {
     @CommandPermission("lmenus.admin.retitle")
     @CommandCompletion("@menus @nothing")
     @Syntax("<name> <new_title>")
+    @Description("Retitles the specified menu with new value.")
     public void onRetitle(Player player, String name, String newTitle) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
@@ -133,6 +137,7 @@ public class LMenusCommand extends BaseCommand {
     @CommandPermission("lmenus.use.open")
     @CommandCompletion("@menus")
     @Syntax("<name>")
+    @Description("Opens the specified menu.")
     public void onOpen(Player player, String name) {
         openMenu(player, name);
     }
@@ -141,6 +146,7 @@ public class LMenusCommand extends BaseCommand {
     @CommandPermission("lmenus.use.info")
     @CommandCompletion("@menus")
     @Syntax("<name>")
+    @Description("Provides details about the specified menu.")
     public void onInfo(Player player, String name) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
@@ -166,6 +172,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("list")
     @CommandPermission("lmenus.use.list")
+    @Description("Lists out all menus.")
     public void onList(Player player) {
         if (menuManager.getLoadedMenus().isEmpty()) {
             MessageUtil.send(player, "no_menus");
@@ -182,6 +189,7 @@ public class LMenusCommand extends BaseCommand {
 
     @HelpCommand
     @CommandPermission("lmenus.use.help")
+    @Description("Opens this help menu.")
     public void onHelp(Player player, co.aikar.commands.CommandHelp help) {
         help.showHelp();
     }
@@ -194,7 +202,7 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        player.openInventory(menu.buildInventory());
+        player.openInventory(menu.buildInventory(player));
         sessionManager.startSession(player, SessionManager.SessionType.VIEWING, menu.getName());
     }
 }

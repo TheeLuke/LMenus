@@ -8,6 +8,7 @@ import io.github.theeluke.managers.MenuManager;
 import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,6 +26,19 @@ public final class LMenus extends JavaPlugin {
 
         // config
         saveDefaultConfig();
+
+        // bstats
+        int pluginId = 29946;
+        Metrics metrics = new Metrics(this, pluginId);
+
+        // check for updates
+        new io.github.theeluke.utils.UpdateChecker(this, 00000).getVersion(version -> {
+            if (this.getDescription().getVersion().equals(version)) {
+                getLogger().info("There is not a new update available.");
+            } else {
+                getLogger().info("There is a new update available for LMenus! Download it here: https://www.spigotmc.org/resources/00000/");
+            }
+        });
 
         // load managers
         this.menuManager = new MenuManager();

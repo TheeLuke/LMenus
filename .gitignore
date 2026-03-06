@@ -8,6 +8,9 @@
 # IntelliJ
 out/
 
+# Claude
+CLAUDE.md
+
 # Compiled class file
 *.class
 

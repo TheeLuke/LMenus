@@ -1,13 +1,41 @@
 package io.github.theeluke.utils;
 
 import io.github.theeluke.LMenus;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Map;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MessageUtil {
+
+    private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
+
+    public static String format(Player player, String text) {
+        if (text == null) return "";
+
+        // 1. Apply PlaceholderAPI if it is installed on the server
+        if (player != null && Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            text = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, text);
+        }
+
+        // 2. Parse Hex Colors (e.g., &#FF5555)
+        Matcher matcher = HEX_PATTERN.matcher(text);
+        StringBuilder buffer = new StringBuilder();
+        while (matcher.find()) {
+            // Converts &#FF5555 to BungeeCord's native hex format
+            matcher.appendReplacement(buffer, net.md_5.bungee.api.ChatColor.of("#" + matcher.group(1)).toString());
+        }
+        matcher.appendTail(buffer);
+        text = buffer.toString();
+
+        // 3. Parse Legacy Colors (e.g., &a, &l)
+        return ChatColor.translateAlternateColorCodes('&', text);
+    }
 
     public static void send(CommandSender sender, String configPath) {
         String prefix = LMenus.getInstance().getConfig().getString("settings.prefix", "&8[&bLMenus&8] ");

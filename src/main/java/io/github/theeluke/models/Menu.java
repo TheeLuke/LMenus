@@ -2,6 +2,7 @@ package io.github.theeluke.models;
 
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -43,10 +44,12 @@ public class Menu {
         this.items = items;
     }
 
-    public Inventory buildInventory() {
-        String formattedTitle = ChatColor.translateAlternateColorCodes('&', this.title);
+    public Inventory buildInventory(Player player) {
+        // Use our new formatter to parse Hex and PAPI!
+        String formattedTitle = io.github.theeluke.utils.MessageUtil.format(player, this.title);
 
         Inventory inv = Bukkit.createInventory(null, this.size, formattedTitle);
+
         for (Map.Entry<Integer, ItemStack> entry : items.entrySet()) {
             inv.setItem(entry.getKey(), entry.getValue());
         }
