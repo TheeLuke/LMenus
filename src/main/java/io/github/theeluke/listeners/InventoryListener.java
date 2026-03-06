@@ -46,8 +46,29 @@ public class InventoryListener implements Listener {
             if (clickedInv == null) return;
             if (clickedInv.equals(event.getView().getTopInventory())) {
                 event.setCancelled(true);
+
+                Menu menu = menuManager.getMenu(session.menuName());
+                if (menu != null && menu.getButtons().containsKey(event.getRawSlot())) {
+
+                    // Loop through ALL buttons attached to this slot
+                    for (Menu.Button button : menu.getButtons().get(event.getRawSlot())) {
+                        if (button.type().equals("command")) {
+                            String cmd = button.action().replace("{player}", player.getName());
+                            if (button.isPlayer()) {
+                                player.performCommand(cmd);
+                            } else {
+                                org.bukkit.Bukkit.dispatchCommand(org.bukkit.Bukkit.getConsoleSender(), cmd);
+                            }
+                        } else if (button.type().equals("menu")) {
+                            org.bukkit.Bukkit.getScheduler().runTask(LMenus.getInstance(), () -> {
+                                player.performCommand("lm open " + button.action());
+                            });
+                        }
+                    }
+                }
                 return;
             }
+
             // Prevents shift-clicking
             if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                 event.setCancelled(true);
@@ -59,6 +80,43 @@ public class InventoryListener implements Listener {
             // Block offhand swapping
             else if (event.getClick() == org.bukkit.event.inventory.ClickType.SWAP_OFFHAND) {
                 event.setCancelled(true);
+            }
+        }
+
+        if (session.type() == SessionManager.SessionType.ADDING_BUTTON) {
+            event.setCancelled(true);
+            Inventory clickedInv = event.getClickedInventory();
+
+            // If they clicked the top menu (an item or an empty slot)
+            if (clickedInv != null && clickedInv.equals(event.getView().getTopInventory())) {
+                int slot = event.getRawSlot();
+                Menu menu = menuManager.getMenu(session.menuName());
+
+                if (menu != null) {
+                    menu.addButton(slot, new Menu.Button(session.buttonType(), session.buttonAction(), session.isPlayer()));
+                    storageManager.saveMenu(menu);
+
+                    MessageUtil.send(player, "button_added", "{slot}", String.valueOf(slot));
+                    player.closeInventory();
+                }
+            }
+        }
+
+        if (session.type() == SessionManager.SessionType.REMOVING_BUTTON) {
+            event.setCancelled(true);
+            Inventory clickedInv = event.getClickedInventory();
+
+            if (clickedInv != null && clickedInv.equals(event.getView().getTopInventory())) {
+                int slot = event.getRawSlot();
+                Menu menu = menuManager.getMenu(session.menuName());
+
+                if (menu != null) {
+                    menu.removeButtons(slot);
+                    storageManager.saveMenu(menu);
+
+                    MessageUtil.send(player, "button_removed", "{slot}", String.valueOf(slot));
+                    player.closeInventory();
+                }
             }
         }
     }

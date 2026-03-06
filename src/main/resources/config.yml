@@ -25,3 +25,7 @@ messages:
     - "&bItems configured: &f{items}"
     - "&bCreated by: &f{creator}"
     - "&bCreated on: &f{date}"
+  click_to_bind: "&ePlease click any slot in the menu to bind the button to it."
+  button_added: "&aSuccessfully bound the button to slot {slot}!"
+  click_to_remove: "&cPlease click a slot to wipe all commands from it."
+  button_removed: "&aSuccessfully cleared all commands from slot {slot}!"

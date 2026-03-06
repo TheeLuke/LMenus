@@ -131,6 +131,57 @@ public class LMenusCommand extends BaseCommand {
         MessageUtil.send(sender, "reload_success", "{count}", String.valueOf(menuManager.getLoadedMenus().size()));
     }
 
+    @Subcommand("button command")
+    @CommandPermission("lmenus.admin.button")
+    @CommandCompletion("@menus true|false @nothing")
+    @Syntax("<menu_name> <isPlayer> <command>")
+    @Description("Adds a command button to selected slot in specified menu.")
+    public void onButtonCommand(Player player, String name, boolean isPlayer, String commandArgs) {
+        Menu menu = menuManager.getMenu(name);
+        if (menu == null) {
+            MessageUtil.send(player, "menu_not_found");
+            return;
+        }
+
+        player.openInventory(menu.buildInventory(player));
+        sessionManager.startButtonSession(player, name, "command", commandArgs, isPlayer);
+        MessageUtil.send(player, "click_to_bind");
+    }
+
+    @Subcommand("button menu")
+    @CommandPermission("lmenus.admin.button")
+    @CommandCompletion("@menus @menus")
+    @Syntax("<menu_name> <target_menu>")
+    @Description("Adds a button to selected slot to open target menu in specified menu.")
+    public void onButtonMenu(Player player, String name, String targetMenu) {
+        Menu menu = menuManager.getMenu(name);
+        if (menu == null) {
+            MessageUtil.send(player, "menu_not_found");
+            return;
+        }
+
+        player.openInventory(menu.buildInventory(player));
+        sessionManager.startButtonSession(player, name, "menu", targetMenu, false);
+        MessageUtil.send(player, "click_to_bind");
+    }
+
+    @Subcommand("button remove")
+    @CommandPermission("lmenus.admin.button")
+    @CommandCompletion("@menus @nothing")
+    @Syntax("<menu_name>")
+    @Description("Opens a GUI to removes a button from the specified menu.")
+    public void onButtonRemove(Player player, String name) {
+        Menu menu = menuManager.getMenu(name);
+        if (menu == null) {
+            MessageUtil.send(player, "menu_not_found");
+            return;
+        }
+
+        player.openInventory(menu.buildInventory(player));
+        sessionManager.startSession(player, SessionManager.SessionType.REMOVING_BUTTON, name);
+        MessageUtil.send(player, "click_to_remove");
+    }
+
     // PLAYER COMMANDS
 
     @Subcommand("open")

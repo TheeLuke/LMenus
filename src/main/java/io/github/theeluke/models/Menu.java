@@ -18,6 +18,7 @@ public class Menu {
     private final UUID creator;
     private final long creationDate;
     private Map<Integer, ItemStack> items;
+    private Map<Integer, java.util.List<Button>> buttons = new java.util.HashMap<>();
 
     public Menu(String name, int size, String title, UUID creator, long creationDate) {
         this.name = name;
@@ -55,5 +56,16 @@ public class Menu {
         }
 
         return inv;
+    }
+
+    public record Button(String type, String action, boolean isPlayer) {}
+    public Map<Integer, java.util.List<Button>> getButtons() { return buttons; }
+
+    public void addButton(int slot, Button button) {
+        this.buttons.computeIfAbsent(slot, k -> new java.util.ArrayList<>()).add(button);
+    }
+
+    public void removeButtons(int slot) {
+        this.buttons.remove(slot);
     }
 }

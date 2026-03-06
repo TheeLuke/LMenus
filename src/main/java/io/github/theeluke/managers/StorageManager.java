@@ -44,6 +44,20 @@ public class StorageManager {
             config.set("items." + entry.getKey(), entry.getValue());
         }
 
+        config.set("buttons", null);
+        for (Map.Entry<Integer, java.util.List<Menu.Button>> entry : menu.getButtons().entrySet()) {
+            int slot = entry.getKey();
+            java.util.List<Menu.Button> btnList = entry.getValue();
+
+            // Loop through the list of buttons on this specific slot
+            for (int i = 0; i < btnList.size(); i++) {
+                Menu.Button btn = btnList.get(i);
+                config.set("buttons." + slot + "." + i + ".type", btn.type());
+                config.set("buttons." + slot + "." + i + ".action", btn.action());
+                config.set("buttons." + slot + "." + i + ".isPlayer", btn.isPlayer());
+            }
+        }
+
         try {
             config.save(file);
         } catch (IOException e) {
@@ -76,6 +90,21 @@ public class StorageManager {
                         ItemStack item = config.getItemStack("items." + slot);
                         if (item != null) {
                             menu.setItem(slot, item);
+                        }
+                    }
+                }
+
+                if (config.contains("buttons")) {
+                    for (String slotKey : Objects.requireNonNull(config.getConfigurationSection("buttons")).getKeys(false)) {
+                        int slot = Integer.parseInt(slotKey);
+
+                        // Loop through the indexed buttons (0, 1, 2, etc.) under this slot
+                        for (String indexKey : Objects.requireNonNull(config.getConfigurationSection("buttons." + slotKey)).getKeys(false)) {
+                            String type = config.getString("buttons." + slotKey + "." + indexKey + ".type");
+                            String action = config.getString("buttons." + slotKey + "." + indexKey + ".action");
+                            boolean isPlayer = config.getBoolean("buttons." + slotKey + "." + indexKey + ".isPlayer");
+
+                            menu.addButton(slot, new Menu.Button(type, action, isPlayer));
                         }
                     }
                 }
