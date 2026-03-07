@@ -62,4 +62,4 @@ permissions:
   lmenus.use.help:
     description: Allows viewing the help menu.
 
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, Vault]

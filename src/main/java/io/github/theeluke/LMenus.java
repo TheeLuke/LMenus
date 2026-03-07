@@ -11,11 +11,13 @@ import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import io.github.theeluke.tasks.MenuRefreshTask;
 import io.github.theeluke.utils.UpdateChecker;
+import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
@@ -32,6 +34,8 @@ public final class LMenus extends JavaPlugin {
     private SessionManager sessionManager;
     private StorageManager storageManager;
     private CooldownManager cooldownManager;
+
+    Economy economy = null;
 
     @Override
     public void onEnable() {
@@ -52,6 +56,12 @@ public final class LMenus extends JavaPlugin {
                 getLogger().info("There is a new update available for LMenus! Download it here: https://www.spigotmc.org/resources/00000/");
             }
         });
+
+        if (!setupEconomy()) {
+            getLogger().warning("Vault not found! The 'cost' flag will be disabled.");
+        } else {
+            getLogger().info("Vault hooked successfully! Economy features enabled.");
+        }
 
         // load managers
         this.menuManager = new MenuManager();
@@ -131,9 +141,24 @@ public final class LMenus extends JavaPlugin {
         }
     }
 
+    private boolean setupEconomy() {
+        if(getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        economy = rsp.getProvider();
+        return true;
+    }
+
+
     public static LMenus getInstance() { return instance; }
     public SessionManager getSessionManager() { return sessionManager; }
     public StorageManager getStorageManager() { return storageManager; }
     public MenuManager getMenuManager() { return menuManager; }
     public CooldownManager getCooldownManager() { return cooldownManager; }
+    public Economy getEconomy() { return economy; }
+
 }

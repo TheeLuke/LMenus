@@ -8,7 +8,7 @@ settings:
 messages:
   menu_not_found: "&cMenu not found."
   menu_already_exists: "&cA menu with that name already exists!"
-  invalid_size: "&cSize must be a multiple of 9, between 9 and 54."
+  invalid_size: "&cSize must be one of the following: 9, 18, 27, 36, 45, 54."
   menu_created: "&aCreating menu '{name}'. Place items and close the inventory to save!"
   menu_editing: "&eEditing menu '{name}'. Close the inventory to save changes."
   menu_saved: "&aMenu '{name}' has been saved successfully!"
@@ -17,7 +17,7 @@ messages:
   no_menus: "&eThere are currently no menus created."
   reload_success: "&aSuccessfully reloaded {count} menus and config from disk!"
   session_closed: "&cAn admin reloaded LMenus. Your session was safely closed."
-  menu_list: "&8=== &bLoaded Menus &8===\n&b{menus}"
+  menu_list: "&7Available menus&8: &b{menus}"
   menu_info:
     - "&7=== &bMenu Info: &a{name} &7==="
     - "&bTitle: &r{title}"
@@ -47,3 +47,5 @@ messages:
     - "  &8- &bclose_on_click &f<true/false> &8(Default: true)"
   no_permission_menu: "&cYou do not have permission to open this menu."
   no_permission_button: "&cYou do not have permission to use this button."
+  not_enough_money: "&cYou do not have enough money! This costs ${cost}."
+  money_withdrawn: "&aSuccessfully purchased for &e${cost}&a."

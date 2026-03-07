@@ -7,14 +7,12 @@ import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import io.github.theeluke.utils.MessageUtil;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -56,73 +54,7 @@ public class InventoryListener implements Listener {
                 int slot = event.getRawSlot();
 
                 if (menu != null && menu.getButtons().containsKey(slot)) {
-                    List<Menu.Button> buttons = menu.getButtons().get(slot);
-
-                    for (Menu.Button btn : buttons) {
-                        if (btn.flags().containsKey("permission")) {
-                            String requiredPerm = btn.flags().get("permission");
-                            if (!requiredPerm.equalsIgnoreCase("none") && !player.hasPermission(requiredPerm)) {
-                                MessageUtil.send(player, "no_permission_button");
-                                return; // Stop the entire click completely!
-                            }
-                        }
-                    }
-
-                    // 1. Check for Cooldown Flags
-                    int cooldownSeconds = 0;
-                    for (Menu.Button btn : buttons) {
-                        if (btn.flags().containsKey("cooldown")) {
-                            try {
-                                cooldownSeconds = Math.max(cooldownSeconds, Integer.parseInt(btn.flags().get("cooldown")));
-                            } catch (NumberFormatException ignored) {}
-                        }
-                    }
-
-                    // 2. Enforce the Cooldown
-                    if (cooldownSeconds > 0) {
-                        if (cooldownManager.isOnCooldown(player.getUniqueId(), menu.getName(), slot)) {
-                            long remaining = cooldownManager.getRemainingSeconds(player.getUniqueId(), menu.getName(), slot);
-                            MessageUtil.send(player, "on_cooldown", "{time}", String.valueOf(remaining));
-                            return; // Stop them from running the commands!
-                        }
-                    }
-
-                    boolean closeInventory = true;
-                    for (Menu.Button btn : buttons) {
-                        if (btn.flags().containsKey("close_on_click") &&
-                                btn.flags().get("close_on_click").equalsIgnoreCase("false")) {
-                            closeInventory = false;
-                            break;
-                        }
-                        if (btn.type().equals("menu")) {
-                            closeInventory = false;
-                        }
-                    }
-
-                    if (closeInventory) {
-                        player.closeInventory();
-                    }
-
-                    // 3. Execute the Commands
-                    for (Menu.Button button : buttons) {
-                        if (button.type().equals("command")) {
-                            String cmd = button.action().replace("%player_name%", player.getName());
-                            if (button.isPlayer()) {
-                                player.performCommand(cmd);
-                            } else {
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-                            }
-                        } else if (button.type().equals("menu")) {
-                            Bukkit.getScheduler().runTask(LMenus.getInstance(), () -> {
-                                player.performCommand("lm open " + button.action());
-                            });
-                        }
-                    }
-
-                    // 4. Apply the Cooldown (if applicable)
-                    if (cooldownSeconds > 0) {
-                        cooldownManager.setCooldown(player.getUniqueId(), menu.getName(), slot, cooldownSeconds);
-                    }
+                    executeButtons(player, menu, slot, menu.getButtons().get(slot));
                 }
                 return;
             }
@@ -136,7 +68,7 @@ public class InventoryListener implements Listener {
                 event.setCancelled(true);
             }
             // Block offhand swapping
-            else if (event.getClick() == org.bukkit.event.inventory.ClickType.SWAP_OFFHAND) {
+            else if (event.getClick() == ClickType.SWAP_OFFHAND) {
                 event.setCancelled(true);
             }
         }
@@ -264,5 +196,96 @@ public class InventoryListener implements Listener {
         }
 
         sessionManager.endSession(player);
+    }
+
+    private void executeButtons(Player player, Menu menu, int slot, List<Menu.Button> buttons) {
+        // 1. PERMISSION CHECK
+        for (Menu.Button btn : buttons) {
+            if (btn.flags().containsKey("permission")) {
+                String requiredPerm = btn.flags().get("permission");
+                if (!requiredPerm.equalsIgnoreCase("none") && !player.hasPermission(requiredPerm)) {
+                    MessageUtil.send(player, "no_permission_button");
+                    return;
+                }
+            }
+        }
+
+        // 2. ECONOMY CHECK
+        double totalCost = 0.0;
+        for (Menu.Button btn : buttons) {
+            if (btn.flags().containsKey("cost")) {
+                try {
+                    totalCost += Double.parseDouble(btn.flags().get("cost"));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+
+        Economy econ = LMenus.getInstance().getEconomy();
+        if (totalCost > 0) {
+            if (econ == null) {
+                player.sendMessage("§cVault is not installed! This button is currently disabled.");
+                return;
+            }
+            if (!econ.has(player, totalCost)) {
+                MessageUtil.send(player, "not_enough_money", "{cost}", String.valueOf(totalCost));
+                return;
+            }
+        }
+
+        // 3. COOLDOWN CHECK
+        int cooldownSeconds = 0;
+        for (Menu.Button btn : buttons) {
+            if (btn.flags().containsKey("cooldown")) {
+                try {
+                    cooldownSeconds = Math.max(cooldownSeconds, Integer.parseInt(btn.flags().get("cooldown")));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+
+        if (cooldownSeconds > 0 && cooldownManager.isOnCooldown(player.getUniqueId(), menu.getName(), slot)) {
+            long remaining = cooldownManager.getRemainingSeconds(player.getUniqueId(), menu.getName(), slot);
+            MessageUtil.send(player, "on_cooldown", "{time}", String.valueOf(remaining));
+            return;
+        }
+
+        // 4. CLOSE INVENTORY LOGIC
+        boolean closeInventory = true;
+        for (Menu.Button btn : buttons) {
+            if ((btn.flags().containsKey("close_on_click") && btn.flags().get("close_on_click").equalsIgnoreCase("false"))
+                    || btn.type().equals("menu")) {
+                closeInventory = false;
+                break;
+            }
+        }
+        if (closeInventory) {
+            player.closeInventory();
+        }
+
+        // 5. WITHDRAW ECONOMY
+        if (totalCost > 0 && econ != null) {
+            econ.withdrawPlayer(player, totalCost);
+            MessageUtil.send(player, "money_withdrawn", "{cost}", String.valueOf(totalCost));
+        }
+
+        // 6. EXECUTE COMMANDS
+        for (Menu.Button button : buttons) {
+            if (button.type().equals("command")) {
+                String cmd = button.action().replace("%player_name%", player.getName());
+                if (button.isPlayer()) {
+                    player.performCommand(cmd);
+                } else {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+                }
+            } else if (button.type().equals("menu")) {
+                Bukkit.getScheduler().runTask(io.github.theeluke.LMenus.getInstance(), () -> {
+                    player.performCommand("lm open " + button.action());
+                });
+            }
+        }
+
+        // 7. APPLY COOLDOWN
+        if (cooldownSeconds > 0) {
+            cooldownManager.setCooldown(player.getUniqueId(), menu.getName(), slot, cooldownSeconds);
+        }
     }
 }
