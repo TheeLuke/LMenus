@@ -13,7 +13,13 @@ import io.github.theeluke.tasks.MenuRefreshTask;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public final class LMenus extends JavaPlugin {
 
@@ -29,7 +35,7 @@ public final class LMenus extends JavaPlugin {
         instance = this;
 
         // config
-        saveDefaultConfig();
+        syncConfig();
 
         // bstats
         int pluginId = 29946;
@@ -88,6 +94,30 @@ public final class LMenus extends JavaPlugin {
         }
 
         getLogger().info("LMenus is enabled.");
+    }
+
+    private void syncConfig() {
+        saveDefaultConfig();
+
+        FileConfiguration config = getConfig();
+        InputStream defConfigStream = getResource("config.yml");
+
+        if(defConfigStream != null) {
+            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream));
+            boolean needsSave = false;
+
+            for (String key : defConfig.getKeys(true)) {
+                if (!config.contains(key)) {
+                    config.set(key, defConfig.get(key));
+                    needsSave = true;
+                }
+            }
+
+            if (needsSave) {
+                saveConfig();
+                getLogger().info("Injected missing configuration keys into config.yml!");
+            }
+        }
     }
 
     public static LMenus getInstance() { return instance; }
