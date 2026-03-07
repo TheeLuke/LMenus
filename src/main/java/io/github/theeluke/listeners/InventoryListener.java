@@ -96,7 +96,7 @@ public class InventoryListener implements Listener {
                     // 3. Execute the Commands
                     for (Menu.Button button : buttons) {
                         if (button.type().equals("command")) {
-                            String cmd = button.action().replace("{player}", player.getName()).replace("@p", player.getName());
+                            String cmd = button.action().replace("%player_name%", player.getName());
                             if (button.isPlayer()) {
                                 player.performCommand(cmd);
                             } else {

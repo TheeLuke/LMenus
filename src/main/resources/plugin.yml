@@ -1,10 +1,10 @@
 name: LMenus
-version: '0.6.2'
+version: '0.6.3'
 main: io.github.theeluke.LMenus
 api-version: '1.21'
 prefix: LMenus
 authors: [ theeluke ]
-description: A custom GUI creator and manager plugin.
+description: An in-game custom GUI creator and manager plugin.
 website: theeluke.github.io
 
 permissions:
@@ -26,6 +26,7 @@ permissions:
       lmenus.admin.retitle: true
       lmenus.admin.reload: true
       lmenus.admin.button: true
+      lmenus.admin.flags: true
 
   # Player
   lmenus.use.*:
@@ -50,6 +51,8 @@ permissions:
     description: Allows reloading the plugin data.
   lmenus.admin.button:
     description: Allows adding buttons to menus.
+  lmenus.admin.flags:
+    description: Allows adding flags to buttons and menus.
   lmenus.use.open:
     description: Allows opening menus.
   lmenus.use.info:
