@@ -9,7 +9,7 @@ import java.util.UUID;
 public class SessionManager {
 
     // Defines what the player is doing with the GUI
-    public enum SessionType { CREATING, EDITING, VIEWING, ADDING_BUTTON, REMOVING_BUTTON }
+    public enum SessionType { CREATING, EDITING, VIEWING, ADDING_BUTTON, REMOVING_BUTTON, ADDING_BUTTON_FLAG }
 
     public record Session(SessionType type, String menuName, String buttonType, String buttonAction, boolean isPlayer) {
     }
@@ -34,5 +34,9 @@ public class SessionManager {
 
     public boolean hasSession(Player player) {
         return activeSessions.containsKey(player.getUniqueId());
+    }
+
+    public void startFlagSession(Player player, String menuName, String flagName, String flagValue) {
+        activeSessions.put(player.getUniqueId(), new Session(SessionType.ADDING_BUTTON_FLAG, menuName, flagName, flagValue, false));
     }
 }

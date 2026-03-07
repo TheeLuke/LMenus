@@ -206,32 +206,20 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("flag button")
     @CommandPermission("lmenus.admin.flags")
-    @CommandCompletion("@menus <slot> cooldown|close_on_click @nothing")
-    @Syntax("<menu_name> <slot> <flag_name> <value...>")
+    @CommandCompletion("@menus cooldown|close_on_click @nothing")
+    @Syntax("<menu_name> <flag_name> <value...>")
     @Description("Add a flag to specified button slot.")
-    public void onFlagButton(Player player, String name, int slot, String flagName, String flagValue) {
+    public void onFlagButton(Player player, String name, String flagName, String flagValue) {
         Menu menu = menuManager.getMenu(name);
         if (menu == null) {
             MessageUtil.send(player, "menu_not_found");
             return;
         }
 
-        if (!menu.getButtons().containsKey(slot)) {
-            MessageUtil.send(player, "no_buttons_on_slot", "{slot}", String.valueOf(slot));
-            return;
-        }
+        player.openInventory(menu.buildInventory(player, false));
 
-        // Loop through all commands on this slot and apply the flag to them
-        for (Menu.Button btn : menu.getButtons().get(slot)) {
-            if (flagValue.equalsIgnoreCase("none") || flagValue.equalsIgnoreCase("clear")) {
-                btn.flags().remove(flagName.toLowerCase());
-            } else {
-                btn.flags().put(flagName.toLowerCase(), flagValue);
-            }
-        }
-
-        storageManager.saveMenu(menu);
-        MessageUtil.send(player, "button_flag_set", "{slot}", String.valueOf(slot));
+        sessionManager.startFlagSession(player, name, flagName, flagValue);
+        MessageUtil.send(player, "click_to_flag");
     }
 
     // PLAYER COMMANDS

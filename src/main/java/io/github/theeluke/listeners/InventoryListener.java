@@ -167,6 +167,38 @@ public class InventoryListener implements Listener {
                 }
             }
         }
+
+        if (session.type() == SessionManager.SessionType.ADDING_BUTTON_FLAG) {
+            event.setCancelled(true);
+            Inventory clickedInv = event.getClickedInventory();
+
+            if (clickedInv != null && clickedInv.equals(event.getView().getTopInventory())) {
+                int slot = event.getRawSlot();
+                Menu menu = menuManager.getMenu(session.menuName());
+
+                if (menu != null) {
+                    if (!menu.getButtons().containsKey(slot)) {
+                        MessageUtil.send(player, "no_buttons_on_slot", "{slot}", String.valueOf(slot));
+                        return;
+                    }
+
+                    String flagName = session.buttonType();
+                    String flagValue = session.buttonAction();
+
+                    for (Menu.Button btn : menu.getButtons().get(slot)) {
+                        if (flagValue.equalsIgnoreCase("none") || flagValue.equalsIgnoreCase("clear")) {
+                            btn.flags().remove(flagName.toLowerCase());
+                        } else {
+                            btn.flags().put(flagName.toLowerCase(), flagValue);
+                        }
+                    }
+
+                    storageManager.saveMenu(menu);
+                    MessageUtil.send(player, "button_flag_set", "{slot}", String.valueOf(slot));
+                    player.closeInventory();
+                }
+            }
+        }
     }
 
     @EventHandler
