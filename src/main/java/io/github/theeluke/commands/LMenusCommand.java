@@ -9,6 +9,7 @@ import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import io.github.theeluke.utils.MessageUtil;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -19,12 +20,14 @@ import java.util.Date;
 @CommandAlias("lm|lmenus")
 public class LMenusCommand extends BaseCommand {
 
+    private final LMenus plugin;
     private final MenuManager menuManager;
     private final SessionManager sessionManager;
     private final StorageManager storageManager;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
 
     public LMenusCommand(LMenus plugin) {
+        this.plugin = plugin;
         this.menuManager = plugin.getMenuManager();
         this.sessionManager = plugin.getSessionManager();
         this.storageManager = plugin.getStorageManager();
@@ -112,7 +115,7 @@ public class LMenusCommand extends BaseCommand {
     @Subcommand("reload")
     @CommandPermission("lmenus.admin.reload")
     @Description("Reloads all menus and configs.")
-    public void onReload(org.bukkit.command.CommandSender sender) {
+    public void onReload(CommandSender sender) {
         // Closes any active menu sessions
         for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
             if (sessionManager.hasSession(player)) {
@@ -121,10 +124,8 @@ public class LMenusCommand extends BaseCommand {
             }
         }
 
-        menuManager.clear();
-        storageManager.loadAll(menuManager);
-
-        LMenus.getInstance().reloadConfig();
+        plugin.reloadConfig();
+        plugin.syncConfig();
 
         MessageUtil.send(sender, "reload_success", "{count}", String.valueOf(menuManager.getLoadedMenus().size()));
     }

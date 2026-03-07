@@ -96,7 +96,7 @@ public final class LMenus extends JavaPlugin {
         getLogger().info("LMenus is enabled.");
     }
 
-    private void syncConfig() {
+    public void syncConfig() {
         saveDefaultConfig();
 
         FileConfiguration config = getConfig();
