@@ -50,7 +50,8 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        if (size % 9 != 0 || size < 9 || size > 54) {
+        int actualSize = parseMenuSize(size);
+        if (actualSize == -1) {
             MessageUtil.send(player, "invalid_size");
             return;
         }
@@ -59,11 +60,36 @@ public class LMenusCommand extends BaseCommand {
         Menu menu = new Menu(name, size, title, player.getUniqueId(), System.currentTimeMillis());
         menuManager.addMenu(menu);
 
+        LMenus.getInstance().getStorageManager().saveMenu(menu);
+
         player.openInventory(menu.buildInventory(player, true));
 
         // Start the creation session
         sessionManager.startSession(player, SessionManager.SessionType.CREATING, menu.getName());
         MessageUtil.send(player, "menu_created", "{name}", name);
+    }
+
+    @Subcommand("resize")
+    @CommandPermission("lmenus.admin.resize")
+    @CommandCompletion("@menus @nothing")
+    @Syntax("<menu_name> <new_size_or_rows>")
+    public void onResize(Player player, String name, int newSizeInput) {
+        Menu menu = menuManager.getMenu(name);
+        if (menu == null) {
+            MessageUtil.send(player, "menu_not_found");
+            return;
+        }
+
+        int actualSize = parseMenuSize(newSizeInput);
+        if (actualSize == -1) {
+            MessageUtil.send(player, "invalid_size");
+            return;
+        }
+
+        menu.setSize(actualSize);
+        LMenus.getInstance().getStorageManager().saveMenu(menu);
+
+        MessageUtil.send(player, "menu_resized", "{menu}", name, "{size}", String.valueOf(actualSize));
     }
 
     @Subcommand("edit")
@@ -319,5 +345,18 @@ public class LMenusCommand extends BaseCommand {
 
         player.openInventory(menu.buildInventory(player, false));
         sessionManager.startSession(player, SessionManager.SessionType.VIEWING, menu.getName());
+    }
+
+    private int parseMenuSize(int input) {
+        // If they typed 1-6 (Rows)
+        if (input >= 1 && input <= 6) {
+            return input * 9;
+        }
+        // If they typed 9, 18, 27, 36, 45, or 54 (Slots)
+        else if (input >= 9 && input <= 54 && input % 9 == 0) {
+            return input;
+        }
+        // If they typed nonsense
+        return -1;
     }
 }

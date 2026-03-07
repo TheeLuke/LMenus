@@ -14,7 +14,7 @@ import java.util.*;
 public class Menu {
 
     private final String name;
-    private final int size;
+    private int size;
     private String title;
     private final UUID creator;
     private final long creationDate;
@@ -35,6 +35,7 @@ public class Menu {
     public int getSize() { return size; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+    public void setSize(int size) { this.size = size; }
     public UUID getCreator() { return creator; }
     public long getCreationDate() { return creationDate; }
     public Map<Integer, ItemStack> getItems() { return items; }
@@ -51,9 +52,11 @@ public class Menu {
         String formattedTitle = MessageUtil.format(player, this.title);
         Inventory inv = Bukkit.createInventory(null, this.size, formattedTitle);
 
+
         // Place physical items
         for (Map.Entry<Integer, ItemStack> entry : items.entrySet()) {
             ItemStack originalItem = entry.getValue();
+            int slot = entry.getKey();
 
             // If the admin is editing, just show the raw item so they don't lose the placeholder strings
             if (isEditing) {
@@ -82,7 +85,9 @@ public class Menu {
                 displayItem.setItemMeta(meta);
             }
 
-            inv.setItem(entry.getKey(), displayItem);
+            if (slot < this.size) {
+                inv.setItem(entry.getKey(), displayItem);
+            }
         }
 
         // Only run Smart Fill if the admin is NOT editing the menu

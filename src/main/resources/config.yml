@@ -8,7 +8,8 @@ settings:
 messages:
   menu_not_found: "&cMenu not found."
   menu_already_exists: "&cA menu with that name already exists!"
-  invalid_size: "&cSize must be one of the following: 9, 18, 27, 36, 45, 54."
+  invalid_size: "&cInvalid size! Please use rows (1-6) or exact slots (9, 18, 27, 36, 45, 54)."
+  menu_resized: "&aSuccessfully resized menu &e{menu} &ato &e{size} &aslots!"
   menu_created: "&aCreating menu '{name}'. Place items and close the inventory to save!"
   menu_editing: "&eEditing menu '{name}'. Close the inventory to save changes."
   menu_saved: "&aMenu '{name}' has been saved successfully!"

@@ -52,6 +52,16 @@ public class MessageUtil {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + message));
     }
 
+    public static void send(Player player, String messageKey, String placeholder1, String value1, String placeholder2, String value2) {
+        String message = io.github.theeluke.LMenus.getInstance().getConfig().getString("messages." + messageKey);
+
+        if (message == null || message.isEmpty()) return;
+
+        message = message.replace(placeholder1, value1).replace(placeholder2, value2);
+
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+    }
+
     public static void sendList(CommandSender sender, String configPath, java.util.Map<String, String> placeholders) {
         java.util.List<String> messages = LMenus.getInstance().getConfig().getStringList("messages." + configPath);
 

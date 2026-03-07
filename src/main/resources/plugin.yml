@@ -1,5 +1,5 @@
 name: LMenus
-version: '0.6.4'
+version: '0.6.5'
 main: io.github.theeluke.LMenus
 api-version: '1.21'
 prefix: LMenus
