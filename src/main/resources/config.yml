@@ -35,3 +35,13 @@ messages:
   button_flag_set: "&aSuccessfully updated the flag for the button at slot {slot}."
   no_buttons_on_slot: "&cThere are no buttons configured on slot {slot}."
   click_to_flag: "&ePlease click the button you want to apply this flag to."
+  flag_list:
+    - "&7=== &bLMenus&7: &fAvailable Flags &7==="
+    - "&eMenu Flags &7(/lm flag menu ...)"
+    - "  &8- &bauto_refresh &f<true/false>"
+    - "  &8- &brefresh_ticks &f<number> &8(Default: 20)"
+    - "  &8- &bfiller_item &f<material_name/none>"
+    - ""
+    - "&eButton Flags &7(/lm flag button ...)"
+    - "  &8- &bcooldown &f<seconds>"
+    - "  &8- &bclose_on_click &f<true/false> &8(Default: true)"

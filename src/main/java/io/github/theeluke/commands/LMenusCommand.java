@@ -1,6 +1,7 @@
 package io.github.theeluke.commands;
 
 import co.aikar.commands.BaseCommand;
+import co.aikar.commands.CommandHelp;
 import co.aikar.commands.annotation.*;
 import io.github.theeluke.LMenus;
 import io.github.theeluke.managers.MenuManager;
@@ -9,12 +10,16 @@ import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import io.github.theeluke.utils.MessageUtil;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 @CommandAlias("lm|lmenus")
@@ -117,7 +122,7 @@ public class LMenusCommand extends BaseCommand {
     @Description("Reloads all menus and configs.")
     public void onReload(CommandSender sender) {
         // Closes any active menu sessions
-        for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
             if (sessionManager.hasSession(player)) {
                 player.closeInventory();
                 MessageUtil.send(player, "session_closed");
@@ -223,6 +228,16 @@ public class LMenusCommand extends BaseCommand {
         MessageUtil.send(player, "click_to_flag");
     }
 
+    @Subcommand("flag list")
+    @CommandPermission("lmenus.admin.flags")
+    public void onFlagList(Player player) {
+        List<String> flagList = LMenus.getInstance().getConfig().getStringList("messages.flag_list");
+
+        for (String line : flagList) {
+            player.sendMessage(MessageUtil.format(player, line));
+        }
+    }
+
     // PLAYER COMMANDS
 
     @Subcommand("open")
@@ -246,12 +261,12 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        String creatorName = org.bukkit.Bukkit.getOfflinePlayer(menu.getCreator()).getName();
+        String creatorName = Bukkit.getOfflinePlayer(menu.getCreator()).getName();
         if (creatorName == null) {
             creatorName = "Unknown (" + menu.getCreator().toString() + ")";
         }
 
-        java.util.Map<String, String> placeholders = new java.util.HashMap<>();
+        Map<String, String> placeholders = new HashMap<>();
         placeholders.put("name", menu.getName());
         placeholders.put("title", menu.getTitle());
         placeholders.put("size", String.valueOf(menu.getSize()));
@@ -274,7 +289,7 @@ public class LMenusCommand extends BaseCommand {
         // Extract the names of all loaded menus
         String menuNames = menuManager.getLoadedMenus().stream()
                 .map(Menu::getName)
-                .collect(java.util.stream.Collectors.joining(ChatColor.GRAY + ", " + ChatColor.AQUA));
+                .collect(Collectors.joining(ChatColor.GRAY + ", " + ChatColor.AQUA));
 
         MessageUtil.send(player, "menu_list", "{menus}", menuNames);
     }
@@ -282,7 +297,7 @@ public class LMenusCommand extends BaseCommand {
     @HelpCommand
     @CommandPermission("lmenus.use.help")
     @Description("Opens this help menu.")
-    public void onHelp(Player player, co.aikar.commands.CommandHelp help) {
+    public void onHelp(Player player, CommandHelp help) {
         help.showHelp();
     }
 
