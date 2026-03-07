@@ -1,0 +1,17 @@
+name: example_menu_2
+size: 54
+title: '&6Filled Example Menu'
+creator: bba30065-07ca-481c-9a8e-ebe8a0ae210a
+creationDate: 1772905006133
+items:
+  '22':
+    ==: org.bukkit.inventory.ItemStack
+    DataVersion: 4671
+    id: minecraft:diamond_pickaxe
+    count: 1
+    components:
+      minecraft:custom_name: '{extra:[{bold:0b,color:"gold",italic:0b,obfuscated:0b,strikethrough:0b,text:"Using
+        a flag, I filled this menu with diamonds",underlined:0b}],text:""}'
+    schema_version: 1
+flags:
+  filler_item: DIAMOND

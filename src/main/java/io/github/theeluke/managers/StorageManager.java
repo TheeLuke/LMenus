@@ -79,11 +79,13 @@ public class StorageManager {
         }
     }
 
-    public void loadAll(MenuManager menuManager) {
-        if (!menuFolder.exists()) return;
+    public int loadAll(MenuManager menuManager) {
+        if (!menuFolder.exists()) return 0;
 
         File[] files = menuFolder.listFiles((dir, name) -> name.endsWith(".yml"));
-        if (files == null) return;
+        if (files == null) return 0;
+
+        int count = 0;
 
         for (File file : files) {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
@@ -136,11 +138,13 @@ public class StorageManager {
                 }
 
                 menuManager.addMenu(menu);
+                count++;
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to load menu file: " + file.getName() + " - " + e.getMessage());
             }
 
         }
+        return count;
     }
 
     public void saveAll(MenuManager menuManager) {

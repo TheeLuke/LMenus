@@ -188,7 +188,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("flag menu")
     @CommandPermission("lmenus.admin.flags")
-    @CommandCompletion("@menus auto_refresh|filler_item @nothing") // Suggests flags for the admin
+    @CommandCompletion("@menus auto_refresh|filler_item|permission @nothing") // Suggests flags for the admin
     @Syntax("<menu_name> <flag_name> <value...>")
     @Description("Add a flag to a specific menu")
     public void onFlagMenu(Player player, String name, String flagName, String flagValue) {
@@ -212,7 +212,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("flag button")
     @CommandPermission("lmenus.admin.flags")
-    @CommandCompletion("@menus cooldown|close_on_click @nothing")
+    @CommandCompletion("@menus cooldown|close_on_click|permission @nothing")
     @Syntax("<menu_name> <flag_name> <value...>")
     @Description("Add a flag to specified button slot.")
     public void onFlagButton(Player player, String name, String flagName, String flagValue) {
@@ -307,6 +307,14 @@ public class LMenusCommand extends BaseCommand {
         if (menu == null) {
             MessageUtil.send(player, "menu_not_found");
             return;
+        }
+
+        if (menu.getFlags().containsKey("permission")) {
+            String requiredPerm = menu.getFlags().get("permission");
+            if (!requiredPerm.equalsIgnoreCase("none") && !player.hasPermission(requiredPerm)) {
+                MessageUtil.send(player, "no_permission_menu");
+                return;
+            }
         }
 
         player.openInventory(menu.buildInventory(player, false));

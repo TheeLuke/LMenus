@@ -58,6 +58,16 @@ public class InventoryListener implements Listener {
                 if (menu != null && menu.getButtons().containsKey(slot)) {
                     List<Menu.Button> buttons = menu.getButtons().get(slot);
 
+                    for (Menu.Button btn : buttons) {
+                        if (btn.flags().containsKey("permission")) {
+                            String requiredPerm = btn.flags().get("permission");
+                            if (!requiredPerm.equalsIgnoreCase("none") && !player.hasPermission(requiredPerm)) {
+                                MessageUtil.send(player, "no_permission_button");
+                                return; // Stop the entire click completely!
+                            }
+                        }
+                    }
+
                     // 1. Check for Cooldown Flags
                     int cooldownSeconds = 0;
                     for (Menu.Button btn : buttons) {

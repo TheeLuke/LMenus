@@ -10,6 +10,7 @@ import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import io.github.theeluke.tasks.MenuRefreshTask;
+import io.github.theeluke.utils.UpdateChecker;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,8 +19,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 public final class LMenus extends JavaPlugin {
 
@@ -42,7 +45,7 @@ public final class LMenus extends JavaPlugin {
         Metrics metrics = new Metrics(this, pluginId);
 
         // check for updates
-        new io.github.theeluke.utils.UpdateChecker(this, 00000).getVersion(version -> {
+        new UpdateChecker(this, 00000).getVersion(version -> {
             if (this.getDescription().getVersion().equals(version)) {
                 getLogger().info("There is not a new update available.");
             } else {
@@ -56,11 +59,19 @@ public final class LMenus extends JavaPlugin {
         this.storageManager = new StorageManager(this);
         PaperCommandManager commandManager = new PaperCommandManager(this);
 
-        // load menus
-        this.storageManager.loadAll(menuManager);
+        File menusFolder = new File(getDataFolder(), "menus");
+        if (!menusFolder.exists() || (menusFolder.isDirectory() && menusFolder.list() != null && Objects.requireNonNull(menusFolder.list()).length == 0)) {
+            saveResource("menus/example_menu_1.yml", false);
+            saveResource("menus/example_menu_2.yml", false);
+            getLogger().info("First time install detected: Generated example menus!");
+        }
 
         // cooldowns (cooldown flag)
         this.cooldownManager = new CooldownManager();
+
+        // load menus
+        int loadedMenus = this.storageManager.loadAll(this.menuManager);
+        getLogger().info("Successfully loaded " + loadedMenus + " menus.");
 
         // MenuRefresh task (auto-refresh flag)
         Bukkit.getScheduler().runTaskTimer(this, new MenuRefreshTask(this), 0L, 1L);
