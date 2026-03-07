@@ -51,9 +51,7 @@ public class LMenusCommand extends BaseCommand {
         Menu menu = new Menu(name, size, title, player.getUniqueId(), System.currentTimeMillis());
         menuManager.addMenu(menu);
 
-        // Open the empty inventory for them to fill
-        Inventory inv = menu.buildInventory(player);
-        player.openInventory(inv);
+        player.openInventory(menu.buildInventory(player, true));
 
         // Start the creation session
         sessionManager.startSession(player, SessionManager.SessionType.CREATING, menu.getName());
@@ -73,7 +71,7 @@ public class LMenusCommand extends BaseCommand {
         }
 
         // Open the pre-populated inventory
-        player.openInventory(menu.buildInventory(player));
+        player.openInventory(menu.buildInventory(player, true));
         sessionManager.startSession(player, SessionManager.SessionType.EDITING, menu.getName());
         MessageUtil.send(player, "menu_editing", "{name}", name);
     }
@@ -143,7 +141,7 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        player.openInventory(menu.buildInventory(player));
+        player.openInventory(menu.buildInventory(player, false));
         sessionManager.startButtonSession(player, name, "command", commandArgs, isPlayer);
         MessageUtil.send(player, "click_to_bind");
     }
@@ -160,7 +158,7 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        player.openInventory(menu.buildInventory(player));
+        player.openInventory(menu.buildInventory(player, false));
         sessionManager.startButtonSession(player, name, "menu", targetMenu, false);
         MessageUtil.send(player, "click_to_bind");
     }
@@ -177,9 +175,63 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        player.openInventory(menu.buildInventory(player));
+        player.openInventory(menu.buildInventory(player, false));
         sessionManager.startSession(player, SessionManager.SessionType.REMOVING_BUTTON, name);
         MessageUtil.send(player, "click_to_remove");
+    }
+
+    @Subcommand("flag menu")
+    @CommandPermission("lmenus.admin.flags")
+    @CommandCompletion("@menus auto_refresh|filler_item @nothing") // Suggests flags for the admin
+    @Syntax("<menu_name> <flag_name> <value...>")
+    @Description("Add a flag to a specific menu")
+    public void onFlagMenu(Player player, String name, String flagName, String flagValue) {
+        Menu menu = menuManager.getMenu(name);
+        if (menu == null) {
+            MessageUtil.send(player, "menu_not_found");
+            return;
+        }
+
+        // If they type "none" or "clear", remove the flag entirely
+        if (flagValue.equalsIgnoreCase("none") || flagValue.equalsIgnoreCase("clear")) {
+            menu.removeFlag(flagName);
+            MessageUtil.send(player, "flag_removed", "{flag}", flagName);
+        } else {
+            menu.setFlag(flagName, flagValue);
+            MessageUtil.send(player, "flag_set", "{flag}", flagName);
+        }
+
+        storageManager.saveMenu(menu);
+    }
+
+    @Subcommand("flag button")
+    @CommandPermission("lmenus.admin.flags")
+    @CommandCompletion("@menus <slot> cooldown @nothing")
+    @Syntax("<menu_name> <slot> <flag_name> <value...>")
+    @Description("Add a flag to specified button slot.")
+    public void onFlagButton(Player player, String name, int slot, String flagName, String flagValue) {
+        Menu menu = menuManager.getMenu(name);
+        if (menu == null) {
+            MessageUtil.send(player, "menu_not_found");
+            return;
+        }
+
+        if (!menu.getButtons().containsKey(slot)) {
+            MessageUtil.send(player, "no_buttons_on_slot", "{slot}", String.valueOf(slot));
+            return;
+        }
+
+        // Loop through all commands on this slot and apply the flag to them
+        for (Menu.Button btn : menu.getButtons().get(slot)) {
+            if (flagValue.equalsIgnoreCase("none") || flagValue.equalsIgnoreCase("clear")) {
+                btn.flags().remove(flagName.toLowerCase());
+            } else {
+                btn.flags().put(flagName.toLowerCase(), flagValue);
+            }
+        }
+
+        storageManager.saveMenu(menu);
+        MessageUtil.send(player, "button_flag_set", "{slot}", String.valueOf(slot));
     }
 
     // PLAYER COMMANDS
@@ -253,7 +305,7 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        player.openInventory(menu.buildInventory(player));
+        player.openInventory(menu.buildInventory(player, false));
         sessionManager.startSession(player, SessionManager.SessionType.VIEWING, menu.getName());
     }
 }

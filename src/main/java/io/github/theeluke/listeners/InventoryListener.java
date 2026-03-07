@@ -1,11 +1,13 @@
 package io.github.theeluke.listeners;
 
 import io.github.theeluke.LMenus;
+import io.github.theeluke.managers.CooldownManager;
 import io.github.theeluke.managers.MenuManager;
 import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import io.github.theeluke.utils.MessageUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,6 +19,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InventoryListener implements Listener {
@@ -24,11 +27,13 @@ public class InventoryListener implements Listener {
     private final SessionManager sessionManager;
     private final MenuManager menuManager;
     private final StorageManager storageManager;
+    private final CooldownManager cooldownManager;
 
     public InventoryListener(LMenus plugin) {
         this.sessionManager = plugin.getSessionManager();
         this.menuManager = plugin.getMenuManager();
         this.storageManager = plugin.getStorageManager();
+        this.cooldownManager = plugin.getCooldownManager();
     }
 
     @EventHandler
@@ -48,22 +53,49 @@ public class InventoryListener implements Listener {
                 event.setCancelled(true);
 
                 Menu menu = menuManager.getMenu(session.menuName());
-                if (menu != null && menu.getButtons().containsKey(event.getRawSlot())) {
+                int slot = event.getRawSlot();
 
-                    // Loop through ALL buttons attached to this slot
-                    for (Menu.Button button : menu.getButtons().get(event.getRawSlot())) {
+                if (menu != null && menu.getButtons().containsKey(slot)) {
+                    List<Menu.Button> buttons = menu.getButtons().get(slot);
+
+                    // 1. Check for Cooldown Flags
+                    int cooldownSeconds = 0;
+                    for (Menu.Button btn : buttons) {
+                        if (btn.flags().containsKey("cooldown")) {
+                            try {
+                                cooldownSeconds = Math.max(cooldownSeconds, Integer.parseInt(btn.flags().get("cooldown")));
+                            } catch (NumberFormatException ignored) {}
+                        }
+                    }
+
+                    // 2. Enforce the Cooldown
+                    if (cooldownSeconds > 0) {
+                        if (cooldownManager.isOnCooldown(player.getUniqueId(), menu.getName(), slot)) {
+                            long remaining = cooldownManager.getRemainingSeconds(player.getUniqueId(), menu.getName(), slot);
+                            MessageUtil.send(player, "on_cooldown", "{time}", String.valueOf(remaining));
+                            return; // Stop them from running the commands!
+                        }
+                    }
+
+                    // 3. Execute the Commands
+                    for (Menu.Button button : buttons) {
                         if (button.type().equals("command")) {
-                            String cmd = button.action().replace("{player}", player.getName());
+                            String cmd = button.action().replace("{player}", player.getName()).replace("@p", player.getName());
                             if (button.isPlayer()) {
                                 player.performCommand(cmd);
                             } else {
-                                org.bukkit.Bukkit.dispatchCommand(org.bukkit.Bukkit.getConsoleSender(), cmd);
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
                             }
                         } else if (button.type().equals("menu")) {
-                            org.bukkit.Bukkit.getScheduler().runTask(LMenus.getInstance(), () -> {
+                            Bukkit.getScheduler().runTask(LMenus.getInstance(), () -> {
                                 player.performCommand("lm open " + button.action());
                             });
                         }
+                    }
+
+                    // 4. Apply the Cooldown (if applicable)
+                    if (cooldownSeconds > 0) {
+                        cooldownManager.setCooldown(player.getUniqueId(), menu.getName(), slot, cooldownSeconds);
                     }
                 }
                 return;
@@ -93,7 +125,7 @@ public class InventoryListener implements Listener {
                 Menu menu = menuManager.getMenu(session.menuName());
 
                 if (menu != null) {
-                    menu.addButton(slot, new Menu.Button(session.buttonType(), session.buttonAction(), session.isPlayer()));
+                    menu.addButton(slot, new Menu.Button(session.buttonType(), session.buttonAction(), session.isPlayer(), new java.util.HashMap<>()));
                     storageManager.saveMenu(menu);
 
                     MessageUtil.send(player, "button_added", "{slot}", String.valueOf(slot));

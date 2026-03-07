@@ -4,11 +4,13 @@ import co.aikar.commands.MessageType;
 import co.aikar.commands.PaperCommandManager;
 import io.github.theeluke.commands.LMenusCommand;
 import io.github.theeluke.listeners.InventoryListener;
+import io.github.theeluke.managers.CooldownManager;
 import io.github.theeluke.managers.MenuManager;
 import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,6 +21,7 @@ public final class LMenus extends JavaPlugin {
     private MenuManager menuManager;
     private SessionManager sessionManager;
     private StorageManager storageManager;
+    private CooldownManager cooldownManager;
 
     @Override
     public void onEnable() {
@@ -48,6 +51,12 @@ public final class LMenus extends JavaPlugin {
 
         // load menus
         this.storageManager.loadAll(menuManager);
+
+        // cooldowns (cooldown flag)
+        this.cooldownManager = new CooldownManager();
+
+        // MenuRefresh task (auto-refresh flag)
+        Bukkit.getScheduler().runTaskTimer(this, new io.github.theeluke.tasks.MenuRefreshTask(this), 0L, 1L);
 
         // register listener
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
@@ -84,4 +93,5 @@ public final class LMenus extends JavaPlugin {
     public SessionManager getSessionManager() { return sessionManager; }
     public StorageManager getStorageManager() { return storageManager; }
     public MenuManager getMenuManager() { return menuManager; }
+    public CooldownManager getCooldownManager() { return cooldownManager; }
 }

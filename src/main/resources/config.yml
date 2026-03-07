@@ -29,3 +29,8 @@ messages:
   button_added: "&aSuccessfully bound the button to slot {slot}!"
   click_to_remove: "&cPlease click a slot to wipe all commands from it."
   button_removed: "&aSuccessfully cleared all commands from slot {slot}!"
+  on_cooldown: "&cYou must wait {time} seconds before using this button again!"
+  flag_set: "&aSuccessfully updated the '{flag}' flag for this menu!"
+  flag_removed: "&aSuccessfully removed the '{flag}' flag from this menu."
+  button_flag_set: "&aSuccessfully updated the flag for the button at slot {slot}."
+  no_buttons_on_slot: "&cThere are no buttons configured on slot {slot}."
