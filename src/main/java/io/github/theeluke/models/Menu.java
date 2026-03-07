@@ -133,7 +133,7 @@ public class Menu {
     }
 
     public boolean isAutoRefresh() {
-        return Boolean.parseBoolean(flags.getOrDefault("auto_refresh", "false"));
+        return Boolean.parseBoolean(flags.getOrDefault("auto_refresh", "true"));
     }
 
     public int getRefreshRate() {

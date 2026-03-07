@@ -77,6 +77,22 @@ public class InventoryListener implements Listener {
                         }
                     }
 
+                    boolean closeInventory = true;
+                    for (Menu.Button btn : buttons) {
+                        if (btn.flags().containsKey("close_on_click") &&
+                                btn.flags().get("close_on_click").equalsIgnoreCase("false")) {
+                            closeInventory = false;
+                            break;
+                        }
+                        if (btn.type().equals("menu")) {
+                            closeInventory = false;
+                        }
+                    }
+
+                    if (closeInventory) {
+                        player.closeInventory();
+                    }
+
                     // 3. Execute the Commands
                     for (Menu.Button button : buttons) {
                         if (button.type().equals("command")) {

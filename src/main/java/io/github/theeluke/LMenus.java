@@ -9,6 +9,7 @@ import io.github.theeluke.managers.MenuManager;
 import io.github.theeluke.managers.SessionManager;
 import io.github.theeluke.managers.StorageManager;
 import io.github.theeluke.models.Menu;
+import io.github.theeluke.tasks.MenuRefreshTask;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -56,7 +57,7 @@ public final class LMenus extends JavaPlugin {
         this.cooldownManager = new CooldownManager();
 
         // MenuRefresh task (auto-refresh flag)
-        Bukkit.getScheduler().runTaskTimer(this, new io.github.theeluke.tasks.MenuRefreshTask(this), 0L, 1L);
+        Bukkit.getScheduler().runTaskTimer(this, new MenuRefreshTask(this), 0L, 1L);
 
         // register listener
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
