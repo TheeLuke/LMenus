@@ -43,6 +43,7 @@ public class LMenusCommand extends BaseCommand {
     @Subcommand("create")
     @CommandPermission("lmenus.admin.create")
     @Syntax("<name> <size> [title]")
+    @CommandCompletion("@nothing 1|2|3|4|5|6|9|18|27|36|45|54 @nothing")
     @Description("Creates a menu.")
     public void onCreate(Player player, String name, int size, @Optional String title) {
         if (menuManager.menuExists(name)) {
@@ -56,8 +57,7 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        // Create the new menu object and cache it
-        Menu menu = new Menu(name, size, title, player.getUniqueId(), System.currentTimeMillis());
+        Menu menu = new Menu(name, actualSize, title, player.getUniqueId(), System.currentTimeMillis());
         menuManager.addMenu(menu);
 
         LMenus.getInstance().getStorageManager().saveMenu(menu);
@@ -128,8 +128,8 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("retitle")
     @CommandPermission("lmenus.admin.retitle")
-    @CommandCompletion("@menus @nothing")
     @Syntax("<name> <new_title>")
+    @CommandCompletion("@menus 1|2|3|4|5|6|9|18|27|36|45|54")
     @Description("Retitles the specified menu with new value.")
     public void onRetitle(Player player, String name, String newTitle) {
         Menu menu = menuManager.getMenu(name);
