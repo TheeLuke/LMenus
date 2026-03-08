@@ -86,7 +86,28 @@ public class Menu {
             }
 
             if (slot < this.size) {
-                inv.setItem(entry.getKey(), displayItem);
+                boolean showItem = true;
+
+                if (this.buttons.containsKey(slot)) {
+                    for (Button btn : this.buttons.get(slot)) {
+
+                        if (btn.flags().containsKey("permission")) {
+                            String requiredPerm = btn.flags().get("permission");
+
+                            if (!requiredPerm.equalsIgnoreCase("none") && !player.hasPermission(requiredPerm)) {
+
+                                if (btn.flags().containsKey("visible_no_permission") &&
+                                        btn.flags().get("visible_no_permission").equalsIgnoreCase("false")) {
+
+                                    showItem = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if(showItem) inv.setItem(entry.getKey(), displayItem);
             }
         }
 

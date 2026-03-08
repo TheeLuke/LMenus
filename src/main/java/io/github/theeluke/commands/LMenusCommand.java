@@ -238,7 +238,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("flag button")
     @CommandPermission("lmenus.admin.flags")
-    @CommandCompletion("@menus cooldown|close_on_click|permission|cost @nothing")
+    @CommandCompletion("@menus cooldown|close_on_click|permission|cost|visible_no_permission @nothing")
     @Syntax("<menu_name> <flag_name> <value...>")
     @Description("Add a flag to specified button slot.")
     public void onFlagButton(Player player, String name, String flagName, String flagValue) {

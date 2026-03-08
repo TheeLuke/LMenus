@@ -46,6 +46,8 @@ messages:
     - "&eButton Flags &7(/lm flag button ...)"
     - "  &8- &bcooldown &f<seconds>"
     - "  &8- &bclose_on_click &f<true/false> &8(Default: true)"
+    - "  &8- &cost &f<amount>"
+    - "  &8- &bvisible_no_permission &f<true/false> &8(Default: true)"
   no_permission_menu: "&cYou do not have permission to open this menu."
   no_permission_button: "&cYou do not have permission to use this button."
   not_enough_money: "&cYou do not have enough money! This costs ${cost}."

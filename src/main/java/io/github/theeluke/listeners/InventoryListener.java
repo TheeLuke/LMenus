@@ -9,6 +9,7 @@ import io.github.theeluke.models.Menu;
 import io.github.theeluke.utils.MessageUtil;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -54,6 +55,11 @@ public class InventoryListener implements Listener {
                 int slot = event.getRawSlot();
 
                 if (menu != null && menu.getButtons().containsKey(slot)) {
+                    ItemStack clickedItem = event.getCurrentItem();
+                    if (clickedItem == null || clickedItem.getType() == Material.AIR) {
+                        return;
+                    }
+
                     executeButtons(player, menu, slot, menu.getButtons().get(slot));
                 }
                 return;
