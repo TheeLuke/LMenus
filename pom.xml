@@ -6,7 +6,7 @@
 
     <groupId>io.github.theeluke</groupId>
     <artifactId>LMenus</artifactId>
-    <version>0.6.6</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>LMenus</name>
