@@ -11,6 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 
+
 public class Menu {
 
     private final String name;
@@ -19,8 +20,8 @@ public class Menu {
     private final UUID creator;
     private final long creationDate;
     private Map<Integer, ItemStack> items;
-    private Map<Integer, java.util.List<Button>> buttons = new java.util.HashMap<>();
-    private java.util.Map<String, String> flags = new java.util.HashMap<>();
+    private Map<Integer, List<Button>> buttons = new HashMap<>();
+    private Map<String, String> flags = new HashMap<>();
 
     public Menu(String name, int size, String title, UUID creator, long creationDate) {
         this.name = name;
@@ -30,6 +31,8 @@ public class Menu {
         this.creationDate = creationDate;
         this.items = new HashMap<>();
     }
+
+    public record Button(String type, String action, boolean isPlayer, Map<String, String> flags) {}
 
     public String getName() { return name; }
     public int getSize() { return size; }
@@ -91,17 +94,25 @@ public class Menu {
                 if (this.buttons.containsKey(slot)) {
                     for (Button btn : this.buttons.get(slot)) {
 
-                        if (btn.flags().containsKey("permission")) {
-                            String requiredPerm = btn.flags().get("permission");
+                        String requiredPerm = "none";
+                        String visibleFlag = "true";
 
-                            if (!requiredPerm.equalsIgnoreCase("none") && !player.hasPermission(requiredPerm)) {
+                        // 1. Safely extract flags while ignoring uppercase/lowercase mistakes
+                        for (Map.Entry<String, String> flagEntry : btn.flags().entrySet()) {
+                            if (flagEntry.getKey().equalsIgnoreCase("permission")) {
+                                requiredPerm = flagEntry.getValue().trim();
+                            } else if (flagEntry.getKey().equalsIgnoreCase("visible_no_permission")) {
+                                visibleFlag = flagEntry.getValue().trim();
+                            }
+                        }
 
-                                if (btn.flags().containsKey("visible_no_permission") &&
-                                        btn.flags().get("visible_no_permission").equalsIgnoreCase("false")) {
+                        // 2. Evaluate the permission
+                        if (!requiredPerm.equalsIgnoreCase("none") && !player.hasPermission(requiredPerm)) {
 
-                                    showItem = false;
-                                    break;
-                                }
+                            // 3. Evaluate the visibility flag
+                            if (visibleFlag.equalsIgnoreCase("false")) {
+                                showItem = false;
+                                break; // Hide item and stop checking this slot
                             }
                         }
                     }
@@ -133,7 +144,6 @@ public class Menu {
         return inv;
     }
 
-    public record Button(String type, String action, boolean isPlayer, Map<String, String> flags) {}
     public Map<Integer, List<Button>> getButtons() { return buttons; }
 
     public void addButton(int slot, Button button) {

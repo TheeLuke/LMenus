@@ -90,10 +90,13 @@ public class InventoryListener implements Listener {
 
                 if (menu != null) {
                     menu.addButton(slot, new Menu.Button(session.buttonType(), session.buttonAction(), session.isPlayer(), new java.util.HashMap<>()));
-                    storageManager.saveMenu(menu);
 
                     MessageUtil.send(player, "button_added", "{slot}", String.valueOf(slot));
                     player.closeInventory();
+
+                    Bukkit.getScheduler().runTaskAsynchronously(LMenus.getInstance(), () -> {
+                        storageManager.saveMenu(menu);
+                    });
                 }
             }
         }
@@ -108,10 +111,12 @@ public class InventoryListener implements Listener {
 
                 if (menu != null) {
                     menu.removeButtons(slot);
-                    storageManager.saveMenu(menu);
-
                     MessageUtil.send(player, "button_removed", "{slot}", String.valueOf(slot));
                     player.closeInventory();
+
+                    Bukkit.getScheduler().runTaskAsynchronously(LMenus.getInstance(), () -> {
+                        storageManager.saveMenu(menu);
+                    });
                 }
             }
         }
@@ -141,9 +146,12 @@ public class InventoryListener implements Listener {
                         }
                     }
 
-                    storageManager.saveMenu(menu);
                     MessageUtil.send(player, "button_flag_set", "{slot}", String.valueOf(slot));
                     player.closeInventory();
+
+                    Bukkit.getScheduler().runTaskAsynchronously(LMenus.getInstance(), () -> {
+                        storageManager.saveMenu(menu);
+                    });
                 }
             }
         }
@@ -195,9 +203,11 @@ public class InventoryListener implements Listener {
                 }
 
                 menu.setItems(newItems);
-                storageManager.saveMenu(menu);
-
                 MessageUtil.send(player, "menu_saved", "{name}", menuName);
+
+                Bukkit.getScheduler().runTaskAsynchronously(LMenus.getInstance(), () -> {
+                    storageManager.saveMenu(menu);
+                });
             }
         }
 

@@ -71,7 +71,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("resize")
     @CommandPermission("lmenus.admin.resize")
-    @CommandCompletion("@menus @nothing")
+    @CommandCompletion("@menus 1|2|3|4|5|6|9|18|27|36|45|54")
     @Syntax("<menu_name> <new_size_or_rows>")
     public void onResize(Player player, String name, int newSizeInput) {
         Menu menu = menuManager.getMenu(name);
@@ -128,8 +128,8 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("retitle")
     @CommandPermission("lmenus.admin.retitle")
+    @CommandCompletion("@menus @nothing")
     @Syntax("<name> <new_title>")
-    @CommandCompletion("@menus 1|2|3|4|5|6|9|18|27|36|45|54")
     @Description("Retitles the specified menu with new value.")
     public void onRetitle(Player player, String name, String newTitle) {
         Menu menu = menuManager.getMenu(name);
@@ -214,7 +214,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("flag menu")
     @CommandPermission("lmenus.admin.flags")
-    @CommandCompletion("@menus auto_refresh|filler_item|permission @nothing") // Suggests flags for the admin
+    @CommandCompletion("@menus auto_refresh|filler_item|permission @nothing")
     @Syntax("<menu_name> <flag_name> <value...>")
     @Description("Add a flag to a specific menu")
     public void onFlagMenu(Player player, String name, String flagName, String flagValue) {
@@ -224,16 +224,20 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
-        // If they type "none" or "clear", remove the flag entirely
+        String safeFlagName = flagName.toLowerCase();
+
         if (flagValue.equalsIgnoreCase("none") || flagValue.equalsIgnoreCase("clear")) {
-            menu.removeFlag(flagName);
-            MessageUtil.send(player, "flag_removed", "{flag}", flagName);
+            menu.removeFlag(safeFlagName);
+            MessageUtil.send(player, "flag_removed", "{flag}", safeFlagName);
         } else {
-            menu.setFlag(flagName, flagValue);
-            MessageUtil.send(player, "flag_set", "{flag}", flagName);
+            menu.setFlag(safeFlagName, flagValue);
+            MessageUtil.send(player, "flag_set", "{flag}", safeFlagName);
         }
 
-        storageManager.saveMenu(menu);
+        // Offload YAML disk saving to a background thread
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            storageManager.saveMenu(menu);
+        });
     }
 
     @Subcommand("flag button")
@@ -248,9 +252,10 @@ public class LMenusCommand extends BaseCommand {
             return;
         }
 
+        String safeFlagName = flagName.toLowerCase();
         player.openInventory(menu.buildInventory(player, false));
 
-        sessionManager.startFlagSession(player, name, flagName, flagValue);
+        sessionManager.startFlagSession(player, name, safeFlagName, flagValue);
         MessageUtil.send(player, "click_to_flag");
     }
 

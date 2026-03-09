@@ -49,7 +49,7 @@ public final class LMenus extends JavaPlugin {
         Metrics metrics = new Metrics(this, pluginId);
 
         // check for updates
-        new UpdateChecker(this, 00000).getVersion(version -> {
+        new UpdateChecker(this, 133241).getVersion(version -> {
             if (this.getDescription().getVersion().equals(version)) {
                 getLogger().info("There is not a new update available.");
             } else {
