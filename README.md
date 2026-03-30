@@ -2,7 +2,7 @@
 
 ![Spigot/Paper](https://img.shields.io/badge/Spigot%2FPaper-1.21-blue?style=for-the-badge&logo=minecraft)
 ![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java)
-![Version](https://img.shields.io/badge/Version-1.0.0-success?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-1.1.0-success?style=for-the-badge)
 
 **LMenus** is a highly dynamic, lightweight Spigot/Paper plugin that lets server admins create and manage custom GUI inventory menus entirely in-game. Ditch the YAML configuration files and build your shops, kits, and server selectors through a visual interface.
 
