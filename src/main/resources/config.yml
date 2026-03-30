@@ -4,6 +4,9 @@
 
 settings:
   prefix: "&8[&bLMenus&8] "
+  # Set the timezone used for displaying dates in the /lm info command.
+  # Examples: "America/New_York", "Europe/London", "UTC", "America/Los_Angeles"
+  timezone: "America/New_York"
 
 messages:
   menu_not_found: "&cMenu not found."
@@ -42,6 +45,7 @@ messages:
     - "  &8- &bauto_refresh &f<true/false>"
     - "  &8- &brefresh_ticks &f<number> &8(Default: 20)"
     - "  &8- &bfiller_item &f<material_name/none>"
+    - "  &8- &bvisible_no_permission &f<true/false> &8(Default: true)"
     - ""
     - "&eButton Flags &7(/lm flag button ...)"
     - "  &8- &bcooldown &f<seconds>"

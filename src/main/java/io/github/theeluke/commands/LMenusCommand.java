@@ -15,6 +15,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -214,7 +217,7 @@ public class LMenusCommand extends BaseCommand {
 
     @Subcommand("flag menu")
     @CommandPermission("lmenus.admin.flags")
-    @CommandCompletion("@menus auto_refresh|filler_item|permission @nothing")
+    @CommandCompletion("@menus auto_refresh|refresh_ticks|filler_item|permission @nothing")
     @Syntax("<menu_name> <flag_name> <value...>")
     @Description("Add a flag to a specific menu")
     public void onFlagMenu(Player player, String name, String flagName, String flagValue) {
@@ -297,13 +300,25 @@ public class LMenusCommand extends BaseCommand {
             creatorName = "Unknown (" + menu.getCreator().toString() + ")";
         }
 
+        String tzString = io.github.theeluke.LMenus.getInstance().getConfig().getString("settings.timezone", "UTC");
+        ZoneId zoneId;
+
+        try {
+            zoneId = ZoneId.of(tzString);
+        } catch (Exception e) {
+            zoneId = ZoneId.of("UTC"); // Fallback if the admin types an invalid timezone
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a z").withZone(zoneId);
+        String formattedDate = formatter.format(Instant.ofEpochMilli(menu.getCreationDate()));
+
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("name", menu.getName());
         placeholders.put("title", menu.getTitle());
         placeholders.put("size", String.valueOf(menu.getSize()));
         placeholders.put("items", String.valueOf(menu.getItems().size()));
         placeholders.put("creator", creatorName);
-        placeholders.put("date", dateFormat.format(new Date(menu.getCreationDate())));
+        placeholders.put("date", formattedDate);
 
         MessageUtil.sendList(player, "menu_info", placeholders);
     }
