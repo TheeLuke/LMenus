@@ -1,7 +1,7 @@
 name: LMenus
-version: '1.2.0'
+version: '1.2.1'
 main: io.github.theeluke.LMenus
-api-version: '1.21'
+api-version: '2.26'
 prefix: LMenus
 authors: [ theeluke ]
 description: Build, customize, and manage interactive GUI menus entirely in-game.
